@@ -28,6 +28,8 @@ contract VotingSystem {
     uint public constant CONTEST_FEE = 0.35 ether;
     uint public constant VOTE_FEE = 0.25 ether;
 
+    event VoteCreated(uint id, string title, bool active);
+
     constructor() {
         owner = msg.sender;
         roles[msg.sender] = Role.Admin; // Contract deployer is admin
@@ -62,6 +64,7 @@ contract VotingSystem {
         v.id = voteCounter;
         v.title = _title;
         v.active = true;
+        emit VoteCreated(voteCounter, _title, true);
     }
 
     // Candidate contests for a vote

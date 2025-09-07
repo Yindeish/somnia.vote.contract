@@ -18,14 +18,31 @@ describe("VotingSystem", function () {
     await voting.connect(owner).assignRole(voter.address, 3); // Voter
   });
 
+  it("should assign roles correctly", async () => {
+    expect(await voting.roles(admin.address)).to.equal(1);
+    expect(await voting.roles(candidate.address)).to.equal(2);
+    expect(await voting.roles(voter.address)).to.equal(3);
+  });
+
   it("should allow admin to create a vote with fee", async () => {
     await expect(
-      voting.connect(admin).createVote("Election 1", { value: ethers.parseEther("0.5") })
-    ).to.emit(voting, "VoteCreated"); // optional if you add events
+      voting
+        .connect(admin)
+        .createVote("Election 1", { value: ethers.parseEther("0.5") })
+    )
+      .to.emit(voting, "VoteCreated")
+      .withArgs(1, "Election 1", true);
+
+    const vote = await voting.votes(1);
+    expect(vote.id).to.equal(1);
+    expect(vote.title).to.equal("Election 1");
+    expect(vote.active).to.true;
   });
 
   it("should allow candidate to contest after admin creates vote", async () => {
-    await voting.connect(admin).createVote("Election 1", { value: ethers.parseEther("0.5") });
+    await voting
+      .connect(admin)
+      .createVote("Election 1", { value: ethers.parseEther("0.5") });
 
     await voting.connect(candidate).contest(1, "Candidate A", {
       value: ethers.parseEther("0.35"),
@@ -37,24 +54,32 @@ describe("VotingSystem", function () {
   });
 
   it("should allow voter to vote for a candidate", async () => {
-    await voting.connect(admin).createVote("Election 1", { value: ethers.parseEther("0.5") });
+    await voting
+      .connect(admin)
+      .createVote("Election 1", { value: ethers.parseEther("0.5") });
     await voting.connect(candidate).contest(1, "Candidate A", {
       value: ethers.parseEther("0.35"),
     });
 
-    await voting.connect(voter).vote(1, 0, { value: ethers.parseEther("0.25") });
+    await voting
+      .connect(voter)
+      .vote(1, 0, { value: ethers.parseEther("0.25") });
 
     const candidates = await voting.getCandidates(1);
     expect(candidates[0].voteCount).to.equal(1);
   });
 
   it("should not allow voter to vote twice", async () => {
-    await voting.connect(admin).createVote("Election 1", { value: ethers.parseEther("0.5") });
+    await voting
+      .connect(admin)
+      .createVote("Election 1", { value: ethers.parseEther("0.5") });
     await voting.connect(candidate).contest(1, "Candidate A", {
       value: ethers.parseEther("0.35"),
     });
 
-    await voting.connect(voter).vote(1, 0, { value: ethers.parseEther("0.25") });
+    await voting
+      .connect(voter)
+      .vote(1, 0, { value: ethers.parseEther("0.25") });
 
     await expect(
       voting.connect(voter).vote(1, 0, { value: ethers.parseEther("0.25") })
