@@ -1,0 +1,21 @@
+{
+  "name": "somnia-vote",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test ./test/vote.ts",
+    "start": "npx hardhat node",
+    "deplpy": "npx hardhat deploy ./ignition/modules/vote.ts",
+    "deploy:local": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network localhost"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^4.1.0",
+    "hardhat": "2.26.3"
+  }
+}
