@@ -8,7 +8,8 @@
     "test": "npx hardhat test ./test/vote.ts",
     "start": "npx hardhat node",
     "deplpy": "npx hardhat deploy ./ignition/modules/vote.ts",
-    "deploy:local": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network localhost"
+    "deploy:local": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network localhost",
+    "deploy:testnet": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network somniaTestnet"
   },
   "keywords": [],
   "author": "",

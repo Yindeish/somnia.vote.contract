@@ -4,6 +4,8 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Suspense } from "react";
 import { ContractProvider } from "@/contexts/contract-context";
+import ContextProvider from "@/context";
+import Providers from "@/components/shared/providers";
 
 export const metadata: Metadata = {
   title: "Blockchain Voting System",
@@ -17,12 +19,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={null}>
-          <ContractProvider>{children}</ContractProvider>
-        </Suspense>
+        <Providers>
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );
