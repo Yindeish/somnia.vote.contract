@@ -185,34 +185,34 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     }
   }, [state.isConnected, loadVotes]);
 
-  useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length === 0) {
-          setState({
-            provider: null,
-            signer: null,
-            contract: null,
-            account: null,
-            userRole: Role.None,
-            isConnected: false,
-          });
-          setVotes([]);
-        } else {
-          connectWallet();
-        }
-      };
+  // useEffect(() => {
+  //   if (window.ethereum) {
+  //     const handleAccountsChanged = (accounts: string[]) => {
+  //       if (accounts.length === 0) {
+  //         setState({
+  //           provider: null,
+  //           signer: null,
+  //           contract: null,
+  //           account: null,
+  //           userRole: Role.None,
+  //           isConnected: false,
+  //         });
+  //         setVotes([]);
+  //       } else {
+  //         // connectWallet();
+  //       }
+  //     };
 
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
+  //     // window.ethereum.on("accountsChanged", handleAccountsChanged);
 
-      return () => {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-      };
-    }
-  }, [connectWallet]);
+  //     return () => {
+  //       window.ethereum.removeListener(
+  //         "accountsChanged",
+  //         handleAccountsChanged
+  //       );
+  //     };
+  //   }
+  // }, [connectWallet]);
 
   const value: Web3ContextType = {
     ...state,

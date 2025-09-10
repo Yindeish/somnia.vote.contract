@@ -14,6 +14,7 @@ import { useContract } from "@/contexts/contract-context";
 import { Role } from "@/lib/web3";
 import { Vote, Users, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { AppKitConnectButton } from "@reown/appkit/react";
 
 export default function HomePage() {
   const { isConnected, userRole, votes } = useContract();
@@ -35,8 +36,9 @@ export default function HomePage() {
 
         <div className="grid gap-8 max-w-4xl mx-auto">
           {!isConnected ? (
-            <WalletConnect />
-          ) : (
+            <div className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-center">
+            Connect
+            </div>) : (
             <>
               <div className="grid md:grid-cols-2 gap-6">
                 <UserProfile />
@@ -70,10 +72,10 @@ export default function HomePage() {
                         {userRole === Role.None
                           ? "No Role"
                           : userRole === Role.Admin
-                          ? "Admin"
-                          : userRole === Role.Candidate
-                          ? "Candidate"
-                          : "Voter"}
+                            ? "Admin"
+                            : userRole === Role.Candidate
+                              ? "Candidate"
+                              : "Voter"}
                       </span>
                     </div>
                   </CardContent>
