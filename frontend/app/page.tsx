@@ -15,9 +15,13 @@ import { Role } from "@/lib/web3";
 import { Vote, Users, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { AppKitConnectButton } from "@reown/appkit/react";
+import { injected, useConnect } from "wagmi";
 
 export default function HomePage() {
   const { isConnected, userRole, votes } = useContract();
+  const { connect, connectors, status } = useConnect()
+
+  console.log('connectors, status', connectors, status)
 
   const activeVotes = votes.filter((vote) => vote.active);
 
@@ -36,8 +40,10 @@ export default function HomePage() {
 
         <div className="grid gap-8 max-w-4xl mx-auto">
           {!isConnected ? (
-            <div className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-center">
-            Connect
+            <div
+              onClick={() => connect({connector: injected()})}
+              className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-center">
+              Connect
             </div>) : (
             <>
               <div className="grid md:grid-cols-2 gap-6">
