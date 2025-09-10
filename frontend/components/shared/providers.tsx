@@ -1,18 +1,22 @@
-import ContextProvider from "@/context";
+'use client'
+
 import { ContractProvider } from "@/contexts/contract-context";
-import { headers } from "next/headers";
+import { config } from "@/wagmi/config";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode } from "react";
+import { WagmiProvider } from "wagmi";
 
 const Providers = async ({ children }: { children: ReactNode }) => {
-    const headersObj = await headers();
-    const cookies = headersObj.get('cookie')
+    const queryClient = new QueryClient()
 
     return (
-        <ContextProvider cookies={cookies}>
-            <ContractProvider>
-                {children}
-            </ContractProvider>
-        </ContextProvider>
+        <WagmiProvider config={config}>
+            <QueryClientProvider client={queryClient}>
+                <ContractProvider>
+                    {children}
+                </ContractProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
     )
 }
 
