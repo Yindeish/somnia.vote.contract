@@ -47,5 +47,6 @@ npm run test
 # Deployed Addresses
 
 # VoteModule#VotingSystem - 0x54ca04C19748C88aa4aB3C70C01989a9dc3c027c
+# Latest deployment VoteModule#VotingSystem - 0x1fbcb97b17fAfCCac3BB5ae0A4720AdD058B68C0
 # adamadeshina@Adams-MacBook-Pro somnia.v
 ## Testnet Deployment

@@ -29,7 +29,6 @@ contract VotingSystem {
     uint public constant VOTE_FEE = 0.25 ether;
 
     event VoteCreated(uint id, string title, bool active);
-    event Registered(address indexed user, Role role);
 
     constructor() {
         owner = msg.sender;
@@ -51,30 +50,10 @@ contract VotingSystem {
         _;
     }
 
-    // --- Registration functions ---
-    function registerAsVoter() external {
-        require(roles[msg.sender] == Role.None, "Already registered");
-        roles[msg.sender] = Role.Voter;
-        emit Registered(msg.sender, Role.Voter);
-    }
-
-    function registerAsCandidate() external {
-        require(roles[msg.sender] == Role.None, "Already registered");
-        roles[msg.sender] = Role.Candidate;
-        emit Registered(msg.sender, Role.Candidate);
-    }
-
-    function registerAsAdmin() external {
-        require(msg.sender == owner, "Only owner can self-register as admin");
-        roles[msg.sender] = Role.Admin;
-        emit Registered(msg.sender, Role.Admin);
-    }
-
-    // Admin can also assign roles manually
+    // Assign roles manually by admin
     function assignRole(address _user, Role _role) external onlyAdmin {
         require(_role != Role.None, "Invalid role");
         roles[_user] = _role;
-        emit Registered(_user, _role);
     }
 
     // Admin creates a vote

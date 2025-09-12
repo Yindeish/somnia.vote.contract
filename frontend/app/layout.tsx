@@ -5,10 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Suspense } from "react";
-import { ContractProvider } from "@/contexts/contract-context";
-import ContextProvider from "@/context";
 import Providers from "@/components/shared/providers";
-
 // export const metadata: Metadata = {
 //   title: "Blockchain Voting System",
 //   description:

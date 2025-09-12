@@ -11,22 +11,115 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useContract } from "@/contexts/contract-context";
-import { Role } from "@/lib/web3";
+import { CONTRACT_ADDRESS, Role, VOTING_CONTRACT_ABI } from "@/lib/web3";
 import { Vote, Users, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { injected, useConnect } from "wagmi";
+import { injected, useConnect, useAccount, useChainId, useDisconnect, useWriteContract } from "wagmi";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/rtkState/hooks/useRtk";
+import { RootState } from "@/rtkState/state";
+import { setUserState } from "@/rtkState/slices/user";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarShortcut,
+  MenubarTrigger,
+} from "@/components/ui/menubar"
+
 
 export default function HomePage() {
-  const { isConnected, userRole, votes } = useContract();
-  const { connect, connectors, status, data, error } = useConnect()
+  const { isConnected: _, userRole, votes } = useContract();
+  const { connect, connectors, status, data, error } = useConnect();
+  const { address: userAddress } = useAppSelector((s: RootState) => s.user);
+  const dispatch = useAppDispatch();
+  const { disconnectAsync } = useDisconnect()
+  const { writeContract, isPending, writeContractAsync, data: writeData, error: writeErr } = useWriteContract();
 
-  console.log('connectors, status', connectors, status)
-  console.log('data, errors', data, error)
+
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
 
   const activeVotes = votes.filter((vote) => vote.active);
 
+  const registerAsAdmin = async () => {
+    writeContractAsync({
+      address: CONTRACT_ADDRESS as `0x${string}`,
+      abi: VOTING_CONTRACT_ABI,
+      functionName: "registerAsAdmin",
+    });
+    console.log('writeData, writeErr', writeData, writeErr)
+  };
+
+  const registerAsCandidate = async () => {
+    writeContractAsync({
+      address: CONTRACT_ADDRESS as `0x${string}`,
+      abi: VOTING_CONTRACT_ABI,
+      functionName: "registerAsCandidate",
+    });
+    console.log('writeData, writeErr', writeData, writeErr)
+  };
+
+  const registerAsVoter = async () => {
+    writeContractAsync({
+      address: CONTRACT_ADDRESS as `0x${string}`,
+      abi: VOTING_CONTRACT_ABI,
+      functionName: "registerAsVoter",
+    });
+    console.log('writeData, writeErr', writeData, writeErr)
+  };
+
+  useEffect(() => {
+    if (address && !userAddress) {
+      dispatch(setUserState({ key: "address", value: address }));
+    }
+    if (!address && userAddress) {
+      dispatch(setUserState({ key: "address", value: '' }));
+    }
+  }, [address, userAddress]);
+
+
   return (
     <div className="min-h-screen bg-background">
+      {/* ✅ Header */}
+      <div className="container mx-auto px-4 py-6 flex justify-end items-center">
+
+        {isConnected && address && (
+          <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-full shadow-sm">
+            <Menubar>
+              <MenubarMenu>
+                <MenubarTrigger>
+                  <span className="font-mono text-sm">
+                    {address.slice(0, 6)}...{address.slice(-4)}
+                  </span>
+                </MenubarTrigger>
+                <MenubarContent>
+                  <MenubarItem>
+                    <Button className="min-w-full" onClick={() => disconnectAsync()}>Disconnect</Button>
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem>
+                    <Button className="min-w-full" onClick={() => registerAsAdmin()}>Be an admin</Button>
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem>
+                    <Button className="min-w-full" onClick={() => registerAsCandidate()}>Be a candidate</Button>
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem>
+                    <Button className="min-w-full" onClick={() => registerAsVoter()}>Be a voter</Button>
+                  </MenubarItem>
+                </MenubarContent>
+              </MenubarMenu>
+            </Menubar>
+          </div>
+        )}
+      </div>
+      {/* ✅ Header */}
+
+      {/* ✅ Main content */}
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-balance mb-2">
@@ -39,13 +132,18 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-8 max-w-4xl mx-auto">
-          {!isConnected ? (
-            <div
-              onClick={() => connect({ connector: injected() })}
-              className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-white text-center cursor-pointer">
-              Connect
-            </div>) : (
+          {!userAddress ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div
+                onClick={() => connect({ connector: injected() })}
+                className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-white text-center cursor-pointer"
+              >
+                Connect
+              </div>
+            </div>
+          ) : (
             <>
+              {/* User Info + Stats */}
               <div className="grid md:grid-cols-2 gap-6">
                 <UserProfile />
                 <Card>
@@ -181,6 +279,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
+      {/* ✅ Main content */}
     </div>
   );
 }
