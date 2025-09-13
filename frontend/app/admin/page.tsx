@@ -5,6 +5,7 @@ import { RoleManagement } from "@/components/role-management";
 import { WalletConnect } from "@/components/wallet-connect";
 import { useContract } from "@/contexts/contract-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AdminProtected from "@/secured/admin-protected";
 
 export default function AdminPage() {
   const { isConnected } = useContract();
@@ -28,31 +29,33 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="roles">Role Management</TabsTrigger>
-          </TabsList>
+    <AdminProtected>
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <Tabs defaultValue="dashboard" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="roles">Role Management</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="dashboard">
-            <AdminDashboard />
-          </TabsContent>
+            <TabsContent value="dashboard">
+              <AdminDashboard />
+            </TabsContent>
 
-          <TabsContent value="roles">
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-3xl font-bold mb-2">Role Management</h2>
-                <p className="text-muted-foreground">
-                  Assign roles to users and manage system permissions
-                </p>
+            <TabsContent value="roles">
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2">Role Management</h2>
+                  <p className="text-muted-foreground">
+                    Assign roles to users and manage system permissions
+                  </p>
+                </div>
+                <RoleManagement />
               </div>
-              <RoleManagement />
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-    </div>
+    </AdminProtected>
   );
 }

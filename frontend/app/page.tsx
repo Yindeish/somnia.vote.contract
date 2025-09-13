@@ -127,15 +127,6 @@ export default function HomePage() {
     signout();
   }
 
-  useEffect(() => {
-    if (address && !userAddress) {
-      signin()
-    }
-    if (!address && userAddress) {
-      signout()
-    }
-  }, [address, userAddress]);
-
   useEffect(() => { getVotes() }, [])
 
   if (user?.role === 'admin') return redirect('/admin-dashboard')

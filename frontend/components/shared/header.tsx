@@ -121,10 +121,24 @@ const Header = () => {
         dispatch(setUserState({ key: "address", value: '' }));
     }
 
-    const handleDisconnect = () => {
-        disconnectAsync();
+    const handleConnect = async () => {
+        connect({ connector: injected() })
+        signin()
+    }
+
+    const handleDisconnect = async () => {
+        await disconnectAsync();
         signout();
     }
+
+    // useEffect(() => {
+    //     if (address && !userAddress) {
+    //       signin()
+    //     }
+    //     if (!address && userAddress) {
+    //       signout()
+    //     }
+    //   }, [address, userAddress]);
 
 
     return (
@@ -143,24 +157,12 @@ const Header = () => {
                                 <MenubarItem>
                                     <Button className="min-w-full" onClick={() => handleDisconnect()}>Disconnect</Button>
                                 </MenubarItem>
-                                {/* <MenubarSeparator /> */}
-                                {/* <MenubarItem>
-                    <Button className="min-w-full" onClick={() => registerAsAdmin()}>Be an admin</Button>
-                  </MenubarItem>
-                  <MenubarSeparator />
-                  <MenubarItem>
-                    <Button className="min-w-full" onClick={() => registerAsCandidate()}>Be a candidate</Button>
-                  </MenubarItem>
-                  <MenubarSeparator />
-                  <MenubarItem>
-                    <Button className="min-w-full" onClick={() => registerAsVoter()}>Be a voter</Button>
-                  </MenubarItem> */}
                             </MenubarContent>
                         </MenubarMenu>
                     </Menubar>
                 </div>
             ) : (
-                <Button onClick={() => connect({ connector: injected() })}>Connect</Button>
+                <Button onClick={() => handleConnect()}>Connect</Button>
             )}
 
         </div>

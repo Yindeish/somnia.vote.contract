@@ -16,9 +16,9 @@ export enum Role {
 
 // Contract fees in ETH
 export const FEES = {
-  CREATE_VOTE: "0.5",
-  CONTEST: "0.35",
-  VOTE: "0.25",
+  CREATE_VOTE: "0.000000005",
+  CONTEST: "0.0000000035",
+  VOTE: "0.0000000025",
 } as const;
 
 // Contract address - this should be set after deployment
