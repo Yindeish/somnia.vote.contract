@@ -9,7 +9,8 @@
     "start": "npx hardhat node",
     "deplpy": "npx hardhat deploy ./ignition/modules/vote.ts",
     "deploy:local": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network localhost",
-    "deploy:testnet": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network somniaTestnet"
+    "deploy:testnet": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network somniaTestnet",
+    "deploy:testnet:reset": "npx hardhat ignition deploy ./ignition/modules/vote.ts --network somniaTestnet --reset"
   },
   "keywords": [],
   "author": "",

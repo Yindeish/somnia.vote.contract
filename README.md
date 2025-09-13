@@ -48,5 +48,6 @@ npm run test
 
 # VoteModule#VotingSystem - 0x54ca04C19748C88aa4aB3C70C01989a9dc3c027c
 # Latest deployment VoteModule#VotingSystem - 0x1fbcb97b17fAfCCac3BB5ae0A4720AdD058B68C0
+## Latest X deployment VoteModule#VotingSystem - 0x191c1e7aABFb88f5840847cb6EC1a29d1b9a2856
 # adamadeshina@Adams-MacBook-Pro somnia.v
 ## Testnet Deployment

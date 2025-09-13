@@ -2,7 +2,12 @@
 pragma solidity ^0.8.20;
 
 contract VotingSystem {
-    enum Role { None, Admin, Candidate, Voter }
+    enum Role {
+        None,
+        Admin,
+        Candidate,
+        Voter
+    }
 
     struct Candidate {
         address candidateAddress;
@@ -24,9 +29,9 @@ contract VotingSystem {
     uint public voteCounter;
     address public owner;
 
-    uint public constant CREATE_VOTE_FEE = 0.5 ether;
-    uint public constant CONTEST_FEE = 0.35 ether;
-    uint public constant VOTE_FEE = 0.25 ether;
+    uint public constant CREATE_VOTE_FEE = 0.000000005 ether;
+    uint public constant CONTEST_FEE = 0.0000000035 ether;
+    uint public constant VOTE_FEE = 0.0000000025 ether;
 
     event VoteCreated(uint id, string title, bool active);
     event Registered(address indexed user, Role role);
@@ -89,7 +94,10 @@ contract VotingSystem {
     }
 
     // Candidate contests for a vote
-    function contest(uint _voteId, string calldata _name) external payable onlyCandidate {
+    function contest(
+        uint _voteId,
+        string calldata _name
+    ) external payable onlyCandidate {
         require(msg.value == CONTEST_FEE, "Must pay 0.35 ETH");
         Vote storage v = votes[_voteId];
         require(v.active, "Vote not active");
@@ -97,13 +105,16 @@ contract VotingSystem {
     }
 
     // Voter votes for a candidate
-    function vote(uint _voteId, uint _candidateIndex) external payable onlyVoter {
+    function vote(
+        uint _voteId,
+        uint _candidateIndex
+    ) external payable onlyVoter {
         require(msg.value == VOTE_FEE, "Must pay 0.25 ETH");
         Vote storage v = votes[_voteId];
         require(v.active, "Vote not active");
         require(!v.hasVoted[msg.sender], "Already voted");
         require(_candidateIndex < v.candidates.length, "Invalid candidate");
-        
+
         v.hasVoted[msg.sender] = true;
         v.candidates[_candidateIndex].voteCount++;
     }
@@ -120,7 +131,9 @@ contract VotingSystem {
     }
 
     // Get candidates for a vote
-    function getCandidates(uint _voteId) external view returns (Candidate[] memory) {
+    function getCandidates(
+        uint _voteId
+    ) external view returns (Candidate[] memory) {
         return votes[_voteId].candidates;
     }
 }
