@@ -11,11 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useContract } from "@/contexts/contract-context";
-import { CONTRACT_ADDRESS, Role, VOTING_CONTRACT_ABI } from "@/lib/web3";
-import { Vote, Users, Shield, ArrowRight } from "lucide-react";
+import { CONTRACT_ADDRESS, Role, VOTING_CONTRACT_ABI, web3 } from "@/lib/web3";
+import { Vote, Users, Shield, ArrowRight, LoaderCircle } from "lucide-react";
 import Link from "next/link";
-import { injected, useConnect, useAccount, useChainId, useDisconnect, useWriteContract } from "wagmi";
-import { useEffect } from "react";
+import { injected, useConnect, useAccount, useChainId, useDisconnect, useWriteContract, useReadContract } from "wagmi";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/rtkState/hooks/useRtk";
 import { RootState } from "@/rtkState/state";
 import { setUserState } from "@/rtkState/slices/user";
@@ -28,6 +28,10 @@ import {
   MenubarShortcut,
   MenubarTrigger,
 } from "@/components/ui/menubar"
+import { UserCheck, BarChart3 } from "lucide-react"
+import { useRouter } from "next/navigation";
+import { tRole } from "@/rtkState/types/user";
+import { toast } from "sonner";
 
 
 export default function HomePage() {
@@ -36,58 +40,109 @@ export default function HomePage() {
   const { address: userAddress } = useAppSelector((s: RootState) => s.user);
   const dispatch = useAppDispatch();
   const { disconnectAsync } = useDisconnect()
-  const { writeContract, isPending, writeContractAsync, data: writeData, error: writeErr } = useWriteContract();
-
-
+  const { writeContractAsync: handleRegisterAsAdmin, isPending: registeringAsAdmin, data: adminData, error: adminErr } = useWriteContract();
+  const { writeContractAsync: handleRegisterAsCandidate, isPending: registeringAsCandidate, data: candidateData, error: candidateErr } = useWriteContract();
+  const { writeContractAsync: handleRegisterAsVoter, isPending: registeringAsVoter, data: voterData, error: voterErr } = useWriteContract();
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  const router = useRouter();
+  const user = useAppSelector((s: RootState) => s.user)
+
 
   const activeVotes = votes.filter((vote) => vote.active);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null)
+
+  const handleRoleSelection = (role: string) => {
+    setSelectedRole(role)
+    router.push(`/${role}-dashboard`)
+  }
+
+  const getVotes = async () => {
+    const { data: voteData, error: voteErr, isPending: gettingVotes } = useReadContract({
+      ...web3.contractFunction('getCandidates')
+    });
+    console.log('voteData, voteErr, gettingVotes', voteData, voteErr, gettingVotes)
+  };
+
+  const updateUserRole = (role: tRole) => {
+    dispatch(setUserState({ key: "role", value: role }));
+    handleRoleSelection(role)
+  }
+
+  const roleAlreadySelected = () => {
+    if (user?.role) {
+      toast("You have already selected a role before!")
+      return;
+    }
+  }
 
   const registerAsAdmin = async () => {
-    writeContractAsync({
-      address: CONTRACT_ADDRESS as `0x${string}`,
-      abi: VOTING_CONTRACT_ABI,
-      functionName: "registerAsAdmin",
-    });
-    console.log('writeData, writeErr', writeData, writeErr)
+    roleAlreadySelected()
+    try {
+      await handleRegisterAsAdmin({
+        ...web3.contractFunction('registerAsAdmin')
+      });
+      console.log('registeringAsAdmin, adminData, adminErr', registeringAsAdmin, adminData, adminErr)
+      if (adminData) updateUserRole('admin')
+    } catch (error: any) {
+      console.log('error: ', error)
+    }
   };
 
   const registerAsCandidate = async () => {
-    writeContractAsync({
-      address: CONTRACT_ADDRESS as `0x${string}`,
-      abi: VOTING_CONTRACT_ABI,
-      functionName: "registerAsCandidate",
-    });
-    console.log('writeData, writeErr', writeData, writeErr)
+    roleAlreadySelected()
+    try {
+      await handleRegisterAsCandidate({
+        ...web3.contractFunction('registerAsCandidate')
+      });
+      console.log('registeringAsCandidate, CandidateData, CandidateErr', registeringAsCandidate, candidateData, candidateErr)
+
+      if (candidateData) updateUserRole('candidate')
+    } catch (error: any) {
+      console.log('error: ', error)
+    }
   };
 
   const registerAsVoter = async () => {
-    writeContractAsync({
-      address: CONTRACT_ADDRESS as `0x${string}`,
-      abi: VOTING_CONTRACT_ABI,
-      functionName: "registerAsVoter",
-    });
-    console.log('writeData, writeErr', writeData, writeErr)
+    roleAlreadySelected()
+    try {
+      await handleRegisterAsVoter({
+        ...web3.contractFunction('registerAsVoter')
+      });
+      console.log('registeringAsVoter, VoterData, VoterErr', registeringAsVoter, voterData, voterErr)
+
+      if (voterData) updateUserRole('voter')
+    } catch (error: any) {
+      console.log('error: ', error)
+    }
   };
+
+  const signin = () => {
+    dispatch(setUserState({ key: "address", value: address as `0x${string}` }));
+  }
+
+  const signout = () => {
+    dispatch(setUserState({ key: "address", value: '' }));
+  }
 
   useEffect(() => {
     if (address && !userAddress) {
-      dispatch(setUserState({ key: "address", value: address }));
+      signin()
     }
     if (!address && userAddress) {
-      dispatch(setUserState({ key: "address", value: '' }));
+      signout()
     }
   }, [address, userAddress]);
 
+  useEffect(() => { getVotes() }, [])
+
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* ✅ Header */}
-      <div className="container mx-auto px-4 py-6 flex justify-end items-center">
+      <div className="w-full px-4 py-3 flex justify-end items-center">
 
         {isConnected && address && (
-          <div className="flex items-center gap-3 bg-muted px-4 py-2 rounded-full shadow-sm">
+          <div className="w-fit flex items-center gap-3 bg-muted px-4 py-2 rounded-full shadow-sm">
             <Menubar>
               <MenubarMenu>
                 <MenubarTrigger>
@@ -120,163 +175,87 @@ export default function HomePage() {
       {/* ✅ Header */}
 
       {/* ✅ Main content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-balance mb-2">
-            Blockchain Voting System
-          </h1>
-          <p className="text-lg text-muted-foreground text-pretty">
-            A secure, transparent, and decentralized voting platform powered by
-            Ethereum
-          </p>
-        </div>
+      <div className="flex-1">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-foreground mb-4">Democratic Voting System</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              A secure and transparent platform for creating votes, registering candidates, and casting ballots. Choose
+              your role to get started.
+            </p>
+          </div>
 
-        <div className="grid gap-8 max-w-4xl mx-auto">
-          {!userAddress ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <div
-                onClick={() => connect({ connector: injected() })}
-                className="w-[200px] h-[50px] bg-teal-500 rounded-full flex items-center justify-center text-white text-center cursor-pointer"
-              >
-                Connect
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* User Info + Stats */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <UserProfile />
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Vote className="h-5 w-5" />
-                      System Status
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Active Votes
-                      </span>
-                      <span className="font-semibold">
-                        {activeVotes.length}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Total Votes
-                      </span>
-                      <span className="font-semibold">{votes.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Your Role
-                      </span>
-                      <span className="font-semibold">
-                        {userRole === Role.None
-                          ? "No Role"
-                          : userRole === Role.Admin
-                            ? "Admin"
-                            : userRole === Role.Candidate
-                              ? "Candidate"
-                              : "Voter"}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {/* Admin Role */}
+            <Card
+              className="hover:shadow-lg transition-shadow"
+            >
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-4 bg-primary/10 rounded-full w-fit">
+                  <UserCheck className="h-10 w-10 text-primary" />
+                </div>
+                <CardTitle className="text-2xl">Admin</CardTitle>
+                <CardDescription className="text-base">
+                  Create and manage voting sessions, end votes, and oversee the entire voting process
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => registerAsAdmin()} className="w-full" size="lg">
+                  {registeringAsAdmin ? (<LoaderCircle className="animate-spin text-white" />) : 'Select Admin Role'}
+                </Button>
+              </CardContent>
+            </Card>
 
-              {/* Role-based Navigation */}
-              <div className="grid gap-4">
-                {userRole === Role.Admin && (
-                  <Card className="border-destructive/20 bg-destructive/5">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-destructive">
-                        <Shield className="h-5 w-5" />
-                        Administrator Access
-                      </CardTitle>
-                      <CardDescription>
-                        You have full administrative privileges. Manage votes,
-                        assign roles, and oversee the system.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Link href="/admin">
-                        <Button className="w-full" size="lg">
-                          Open Admin Panel
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                )}
+            {/* Candidate Role */}
+            <Card
+              className="hover:shadow-lg transition-shadow"
+            >
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-4 bg-secondary/10 rounded-full w-fit">
+                  <Users className="h-10 w-10 text-secondary" />
+                </div>
+                <CardTitle className="text-2xl">Candidate</CardTitle>
+                <CardDescription className="text-base">
+                  Register to contest in voting sessions and manage your candidacy
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => registerAsCandidate()} variant="secondary" className="w-full" size="lg">
+                  {registeringAsCandidate ? (<LoaderCircle className="animate-spin text-white" />) : 'Select Candidate Role'}
+                </Button>
+              </CardContent>
+            </Card>
 
-                {userRole === Role.Candidate && (
-                  <Card className="border-primary/20 bg-primary/5">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Candidate Access
-                      </CardTitle>
-                      <CardDescription>
-                        Contest in active votes by paying the contest fee. Build
-                        your campaign and engage with voters.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Link href="/candidate">
-                        <Button className="w-full" size="lg">
-                          View Candidate Dashboard
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                )}
+            {/* Voter Role */}
+            <Card
+              className="hover:shadow-lg transition-shadow"
+            >
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-4 bg-accent/10 rounded-full w-fit">
+                  <Vote className="h-10 w-10 text-accent" />
+                </div>
+                <CardTitle className="text-2xl">Voter</CardTitle>
+                <CardDescription className="text-base">
+                  Cast your vote for candidates in active voting sessions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter}
+                  onClick={() => registerAsVoter()}
+                  variant="outline"
+                  className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground bg-transparent"
+                  size="lg"
+                >
+                  {registeringAsVoter ? (<LoaderCircle className="animate-spin text-white" />) : 'Select Voter Role'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
 
-                {userRole === Role.Voter && (
-                  <Card className="border-secondary/20 bg-secondary/5">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Vote className="h-5 w-5" />
-                        Voter Access
-                      </CardTitle>
-                      <CardDescription>
-                        Participate in active votes by casting your ballot. Your
-                        voice matters in the democratic process.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Link href="/vote">
-                        <Button className="w-full" size="lg">
-                          Cast Your Vote
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {userRole === Role.None && (
-                  <Card className="border-muted">
-                    <CardHeader>
-                      <CardTitle>No Role Assigned</CardTitle>
-                      <CardDescription>
-                        Contact an administrator to get a role assigned. You
-                        need a role to participate in the voting system.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">
-                        Available roles: Admin (full access), Candidate (can
-                        contest), Voter (can vote)
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </>
-          )}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-muted-foreground">Secure • Transparent • Democratic</p>
+          </div>
         </div>
       </div>
       {/* ✅ Main content */}

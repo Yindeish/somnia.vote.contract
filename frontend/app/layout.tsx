@@ -4,7 +4,6 @@
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-import { Suspense } from "react";
 import Providers from "@/components/shared/providers";
 // export const metadata: Metadata = {
 //   title: "Blockchain Voting System",
@@ -24,9 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Providers>
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
+          {children}
         </Providers>
       </body>
     </html>

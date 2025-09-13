@@ -1,5 +1,6 @@
-
+export type tRole = 'admin' | 'candidate' | 'voter';
 
 export interface iUserSlice {
-    address: string
+    address: string,
+    role: tRole
 }

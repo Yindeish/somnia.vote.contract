@@ -3,6 +3,7 @@ import contractAbi from "@/abi/VotingSystem.json";
 
 // Contract ABI - extracted from the Solidity contract
 export const VOTING_CONTRACT_ABI = contractAbi.abi;
+export type tFunction = 'getCandidates' | 'registerAsVoter' | 'registerAsCandidate' | 'registerAsAdmin' | 'assignRole' | 'createVote' | 'contest' | 'vote' | 'endVote' | 'withdraw' | 'getCandidates';
 
 // Role enum matching the contract
 export enum Role {
@@ -21,6 +22,16 @@ export const FEES = {
 
 // Contract address - this should be set after deployment
 export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+
+export const contractFunction = (name: tFunction) => {
+  return {
+    address: CONTRACT_ADDRESS as `0x${string}`,
+    abi: VOTING_CONTRACT_ABI,
+    functionName: name,
+  }
+}
+
+export const web3 = {CONTRACT_ADDRESS, contractFunction, contractAbi}
 
 // Types
 export interface Candidate {

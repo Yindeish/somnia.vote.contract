@@ -8,8 +8,9 @@ import { WagmiProvider } from "wagmi";
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react';
 import state, { persistor } from "@/rtkState/state";
+import { Toaster } from "@/components/ui/sonner"
 
-const Providers = async ({ children }: { children: ReactNode }) => {
+const Providers = ({ children }: { children: ReactNode }) => {
     const queryClient = new QueryClient()
 
     return (
@@ -18,6 +19,7 @@ const Providers = async ({ children }: { children: ReactNode }) => {
                 <Provider store={state}>
                     <PersistGate loading={null} persistor={persistor}>
                         <ContractProvider>
+                            <Toaster />
                             {children}
                         </ContractProvider>
                     </PersistGate>
