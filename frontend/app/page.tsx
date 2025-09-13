@@ -32,6 +32,7 @@ import { UserCheck, BarChart3 } from "lucide-react"
 import { useRouter } from "next/navigation";
 import { tRole } from "@/rtkState/types/user";
 import { toast } from "sonner";
+import { redirect } from "next/navigation";
 
 
 export default function HomePage() {
@@ -68,15 +69,14 @@ export default function HomePage() {
     handleRoleSelection(role)
   }
 
-  const roleAlreadySelected = () => {
+  const roleAlreadySelected = (fnToRn: () => {}) => {
     if (user?.role) {
       toast("You have already selected a role before!")
       return;
-    }
+    } else fnToRn()
   }
 
   const registerAsAdmin = async () => {
-    roleAlreadySelected()
     try {
       await handleRegisterAsAdmin({
         ...web3.contractFunction('registerAsAdmin')
@@ -89,7 +89,6 @@ export default function HomePage() {
   };
 
   const registerAsCandidate = async () => {
-    roleAlreadySelected()
     try {
       await handleRegisterAsCandidate({
         ...web3.contractFunction('registerAsCandidate')
@@ -103,7 +102,6 @@ export default function HomePage() {
   };
 
   const registerAsVoter = async () => {
-    roleAlreadySelected()
     try {
       await handleRegisterAsVoter({
         ...web3.contractFunction('registerAsVoter')
@@ -124,6 +122,11 @@ export default function HomePage() {
     dispatch(setUserState({ key: "address", value: '' }));
   }
 
+  const handleDisconnect = () => {
+    disconnectAsync();
+    signout();
+  }
+
   useEffect(() => {
     if (address && !userAddress) {
       signin()
@@ -135,13 +138,16 @@ export default function HomePage() {
 
   useEffect(() => { getVotes() }, [])
 
+  if (user?.role === 'admin') return redirect('/admin-dashboard')
+  if (user?.role === 'candidate') return redirect('/candidate-dashboard')
+  if (user?.role === 'voter') return redirect('/voter-dashboard')
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* ✅ Header */}
       <div className="w-full px-4 py-3 flex justify-end items-center">
 
-        {isConnected && address && (
+        {(isConnected && address) ? (
           <div className="w-fit flex items-center gap-3 bg-muted px-4 py-2 rounded-full shadow-sm">
             <Menubar>
               <MenubarMenu>
@@ -152,10 +158,10 @@ export default function HomePage() {
                 </MenubarTrigger>
                 <MenubarContent>
                   <MenubarItem>
-                    <Button className="min-w-full" onClick={() => disconnectAsync()}>Disconnect</Button>
+                    <Button className="min-w-full" onClick={() => handleDisconnect()}>Disconnect</Button>
                   </MenubarItem>
-                  <MenubarSeparator />
-                  <MenubarItem>
+                  {/* <MenubarSeparator /> */}
+                  {/* <MenubarItem>
                     <Button className="min-w-full" onClick={() => registerAsAdmin()}>Be an admin</Button>
                   </MenubarItem>
                   <MenubarSeparator />
@@ -165,12 +171,15 @@ export default function HomePage() {
                   <MenubarSeparator />
                   <MenubarItem>
                     <Button className="min-w-full" onClick={() => registerAsVoter()}>Be a voter</Button>
-                  </MenubarItem>
+                  </MenubarItem> */}
                 </MenubarContent>
               </MenubarMenu>
             </Menubar>
           </div>
+        ) : (
+          <Button onClick={() => connect({ connector: injected() })}>Connect</Button>
         )}
+
       </div>
       {/* ✅ Header */}
 
@@ -200,7 +209,7 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => registerAsAdmin()} className="w-full" size="lg">
+                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => roleAlreadySelected(registerAsAdmin)} className="w-full" size="lg">
                   {registeringAsAdmin ? (<LoaderCircle className="animate-spin text-white" />) : 'Select Admin Role'}
                 </Button>
               </CardContent>
@@ -220,7 +229,7 @@ export default function HomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => registerAsCandidate()} variant="secondary" className="w-full" size="lg">
+                <Button disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter} onClick={() => roleAlreadySelected(registerAsCandidate)} variant="secondary" className="w-full" size="lg">
                   {registeringAsCandidate ? (<LoaderCircle className="animate-spin text-white" />) : 'Select Candidate Role'}
                 </Button>
               </CardContent>
@@ -242,7 +251,7 @@ export default function HomePage() {
               <CardContent>
                 <Button
                   disabled={registeringAsAdmin || registeringAsCandidate || registeringAsVoter}
-                  onClick={() => registerAsVoter()}
+                  onClick={() => roleAlreadySelected(registerAsVoter)}
                   variant="outline"
                   className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground bg-transparent"
                   size="lg"

@@ -9,17 +9,37 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Plus } from "lucide-react"
+import { ArrowLeft, LoaderCircle, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useWriteContract } from "wagmi"
+import { web3 } from "@/lib/web3"
+import { toast } from "sonner"
+import { useAppSelector } from "@/rtkState/hooks/useRtk"
+import { RootState } from "@/rtkState/state"
+import { parseEther } from "viem"
 
 export default function CreateVotePage() {
-  const [title, setTitle] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
+  const { writeContractAsync, isPending, data, isError } = useWriteContract();
+  const { address } = useAppSelector((s: RootState) => s.user)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-   
+  const [title, setTitle] = useState("")
+
+  const handleSubmit = async () => {
+    try {
+      await writeContractAsync({
+        ...web3.contractFunction('createVote'),
+        args: [title],
+        account: address as `0x${string}`,
+        value: parseEther("0.5")
+      });
+      console.log('isPending, data, isError', isPending, data, isError)
+
+      toast(`Successfully created ${title} vote`)
+      router.push('/admin-dashboard')
+    } catch (error: any) {
+      console.log('error: ', error)
+    }
   }
 
   return (
@@ -44,7 +64,7 @@ export default function CreateVotePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="title">Vote Title</Label>
                   <Input
@@ -56,8 +76,8 @@ export default function CreateVotePage() {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating..." : "Create Vote"}
+                <Button type="button" onClick={() => handleSubmit()} className="w-full" disabled={isPending}>
+                  {isPending ? (<LoaderCircle className="animate-spin text-white" />) : 'Create Vote'}
                 </Button>
               </form>
             </CardContent>

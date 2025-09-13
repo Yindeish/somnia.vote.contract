@@ -5,6 +5,7 @@ import contractAbi from "@/abi/VotingSystem.json";
 export const VOTING_CONTRACT_ABI = contractAbi.abi;
 export type tFunction = 'getCandidates' | 'registerAsVoter' | 'registerAsCandidate' | 'registerAsAdmin' | 'assignRole' | 'createVote' | 'contest' | 'vote' | 'endVote' | 'withdraw' | 'getCandidates';
 
+
 // Role enum matching the contract
 export enum Role {
   None = 0,
